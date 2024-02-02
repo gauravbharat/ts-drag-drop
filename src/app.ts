@@ -42,11 +42,7 @@ class ProjectState extends State<Project> {
 
   addProject(title: string, description: string, people: number): void {
     const newProject = new Project(
-      `${new Date()
-        .toJSON()
-        .replace(/-/g, "_")
-        .replace(/:/g, "_")
-        .replace(/./g, "_")}_${Math.floor(Math.random() * 100000).toString()}`,
+      `${Math.floor(Math.random() * 100000).toString()}`,
       title,
       description,
       people,
@@ -191,6 +187,27 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
   }
 }
 
+class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
+  #project: Project;
+
+  constructor(hostId: string, project: Project) {
+    super("single-project", hostId, false, project.id);
+    this.#project = project;
+
+    this.configure();
+    this.renderContent();
+  }
+
+  protected configure(): void {}
+
+  protected renderContent(): void {
+    this.element.querySelector("h2")!.textContent = this.#project.title;
+    this.element.querySelector("h3")!.textContent =
+      this.#project.people.toString();
+    this.element.querySelector("p")!.textContent = this.#project.description;
+  }
+}
+
 class ProjectList extends Component<HTMLDivElement, HTMLElement> {
   #assignedProjects: Project[] = [];
   #currentProjectStatus: ProjectStatus;
@@ -230,9 +247,7 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
     listEl.innerHTML = ""; //clear list item to rerender
 
     for (const projectItem of this.#assignedProjects) {
-      const listItem = document.createElement("li");
-      listItem.textContent = projectItem.title;
-      listEl?.appendChild(listItem);
+      new ProjectItem(listEl.id, projectItem);
     }
   }
 }
