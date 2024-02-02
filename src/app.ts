@@ -35,6 +35,12 @@ class State<T> {
   addListener(executorFn: ExecuterFn<T>) {
     this.actionExecutors.push(executorFn);
   }
+
+  updateListeners(projects: T[]) {
+    for (const executorFn of this.actionExecutors) {
+      executorFn(projects);
+    }
+  }
 }
 
 class ProjectState extends State<Project> {
@@ -62,9 +68,25 @@ class ProjectState extends State<Project> {
     );
 
     this.#projects.push(newProject);
-    for (const executorFn of this.actionExecutors) {
-      executorFn(this.#projects.slice());
+    this.#updateExecutorFns();
+  }
+
+  moveProject(projectId: string, newStatus: ProjectStatus): void {
+    const project = this.#projects.find(
+      (project) => project.id === projectId && project.status !== newStatus
+    );
+
+    if (project) {
+      project.status = newStatus;
+      this.#updateExecutorFns();
     }
+  }
+
+  #updateExecutorFns() {
+    this.updateListeners(this.#projects.slice());
+    // for (const executorFn of this.actionExecutors) {
+    //   executorFn(this.#projects.slice());
+    // }
   }
 }
 
@@ -228,7 +250,8 @@ class ProjectItem
 
   @Autobind
   handleDragStart(event: DragEvent): void {
-    console.log("handleDragStart", this.#project.title, event);
+    event.dataTransfer!.setData("text/plain", this.#project.id);
+    event.dataTransfer!.effectAllowed = "move"; // move element instead of copy
   }
 
   @Autobind
@@ -273,14 +296,22 @@ class ProjectList
   }
 
   @Autobind
-  handleDragOver(_: DragEvent): void {
-    // change the appearance of the drag over area
-    const listEl = this.element.querySelector("ul");
-    listEl?.classList.add("droppable");
+  handleDragOver(event: DragEvent): void {
+    if (event.dataTransfer && event.dataTransfer.types[0] === "text/plain") {
+      event.preventDefault();
+      // change the appearance of the drag over area
+      const listEl = this.element.querySelector("ul");
+      listEl?.classList.add("droppable");
+    }
   }
 
   @Autobind
-  handleDrop(_: DragEvent): void {}
+  handleDrop(event: DragEvent): void {
+    const projectId = event.dataTransfer!.getData("text/plain");
+    if (projectId) {
+      projectState.moveProject(projectId, this.#currentProjectStatus);
+    }
+  }
 
   @Autobind
   handleDragLeave(_: DragEvent): void {
