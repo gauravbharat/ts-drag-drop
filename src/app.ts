@@ -190,6 +190,14 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
 class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
   #project: Project;
 
+  get persons(): string {
+    if (this.#project.people === 1) {
+      return `1 person`;
+    } else {
+      return `${this.#project.people} persons`;
+    }
+  }
+
   constructor(hostId: string, project: Project) {
     super("single-project", hostId, false, project.id);
     this.#project = project;
@@ -202,8 +210,7 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
 
   protected renderContent(): void {
     this.element.querySelector("h2")!.textContent = this.#project.title;
-    this.element.querySelector("h3")!.textContent =
-      this.#project.people.toString();
+    this.element.querySelector("h3")!.textContent = this.persons + " assigned";
     this.element.querySelector("p")!.textContent = this.#project.description;
   }
 }
