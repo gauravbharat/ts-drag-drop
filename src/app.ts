@@ -344,10 +344,36 @@ class ProjectList
       `${this.projectType}-projects-list`
     ) as HTMLUListElement;
 
-    listEl.innerHTML = ""; //clear list item to rerender
+    const ulChildrenIds: string[] = [...listEl.children].map((v) => v.id);
+
+    // console.log(
+    //   "listEl children",
+    //   ulChildrenIds,
+    //   "status",
+    //   this.#currentProjectStatus,
+    //   "this.#assignedProjects",
+    //   this.#assignedProjects
+    // );
+
+    // listEl.innerHTML = ""; //clear list item to rerender
 
     for (const projectItem of this.#assignedProjects) {
-      new ProjectItem(listEl.id, projectItem);
+      if (!ulChildrenIds.includes(projectItem.id)) {
+        new ProjectItem(listEl.id, projectItem);
+      }
+    }
+    const assignedProjectIds = this.#assignedProjects.map((v) => v.id);
+
+    const updatedUlChildrenIds: string[] = [...listEl.children].map(
+      (v) => v.id
+    );
+
+    if (assignedProjectIds.length !== updatedUlChildrenIds.length) {
+      for (const id of updatedUlChildrenIds) {
+        if (!assignedProjectIds.includes(id)) {
+          listEl.removeChild([...listEl.children].find((v) => v.id === id)!);
+        }
+      }
     }
   }
 }
