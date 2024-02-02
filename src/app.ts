@@ -90,6 +90,37 @@ function Autobind(
   return adjustedDescriptor;
 }
 
+class ProjectList {
+  #templateEl: HTMLTemplateElement;
+  #hostEl: HTMLDivElement;
+  #listSectionEl: HTMLElement;
+
+  constructor(private projectType: "active" | "finished") {
+    this.#templateEl = document.getElementById(
+      "project-list"
+    ) as HTMLTemplateElement;
+    this.#hostEl = document.getElementById("app") as HTMLDivElement;
+
+    const importedNode = document.importNode(this.#templateEl.content, true);
+    this.#listSectionEl = importedNode.firstElementChild as HTMLElement;
+    this.#listSectionEl.id = `${this.projectType}-projects`;
+
+    this.#attach();
+    this.#renderContent();
+  }
+
+  #renderContent(): void {
+    const listId = `${this.projectType}-projects-list`;
+    this.#listSectionEl.querySelector("ul")!.id = listId;
+    this.#listSectionEl.querySelector("h2")!.textContent =
+      this.projectType.toUpperCase() + " PROJECTS";
+  }
+
+  #attach(): void {
+    this.#hostEl.insertAdjacentElement("beforeend", this.#listSectionEl);
+  }
+}
+
 class ProjectInput {
   /** Goal:
    * Take handle of the project-input template for the form events
@@ -181,15 +212,6 @@ class ProjectInput {
       }
     }
 
-    // if (
-    //   !validate(titleValidatable)[0] ||
-    //   !validate(descriptionValidatable)[0] ||
-    //   !validate(peopleValidatable)[0]
-    // ) {
-    //   alert("Invalid input");
-    //   return;
-    // }
-
     return [enteredTitle, enteredDescription, enteredPeople];
   }
 
@@ -229,3 +251,5 @@ class ProjectInput {
 }
 
 const projectInput = new ProjectInput();
+const activeProjectList = new ProjectList("active");
+const finishedProjectList = new ProjectList("finished");
