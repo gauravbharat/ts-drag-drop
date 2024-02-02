@@ -1,3 +1,62 @@
+enum ProjectStatus {
+  Active,
+  Finished,
+}
+
+// Project type
+class Project {
+  constructor(
+    public id: string,
+    public title: string,
+    public description: string,
+    public people: number,
+    public status: ProjectStatus
+  ) {}
+}
+
+// Project State Management
+type ExecuterFn = (items: Project[]) => void;
+
+class ProjectState {
+  #projects: Project[] = [];
+  #actionExecutors: ExecuterFn[] = [];
+
+  private static instance: ProjectState;
+  private constructor() {}
+
+  static getInstance() {
+    if (this.instance) return this.instance;
+
+    this.instance = new ProjectState();
+    return this.instance;
+  }
+
+  addProject(title: string, description: string, people: number): void {
+    const newProject = new Project(
+      `${new Date()
+        .toJSON()
+        .replace(/-/g, "_")
+        .replace(/:/g, "_")
+        .replace(/./g, "_")}_${Math.floor(Math.random() * 100000).toString()}`,
+      title,
+      description,
+      people,
+      ProjectStatus.Active
+    );
+
+    this.#projects.push(newProject);
+    for (const executorFn of this.#actionExecutors) {
+      executorFn(this.#projects.slice());
+    }
+  }
+
+  addListener(executorFn: ExecuterFn) {
+    this.#actionExecutors.push(executorFn);
+  }
+}
+
+const projectState = ProjectState.getInstance(); // Singleton class
+
 // Validation
 interface Validatable {
   name: string;
@@ -95,7 +154,15 @@ class ProjectList {
   #hostEl: HTMLDivElement;
   #listSectionEl: HTMLElement;
 
+  #assignedProjects: Project[] = [];
+  #currentProjectStatus: ProjectStatus;
+
   constructor(private projectType: "active" | "finished") {
+    this.#currentProjectStatus =
+      this.projectType === "active"
+        ? ProjectStatus.Active
+        : ProjectStatus.Finished;
+
     this.#templateEl = document.getElementById(
       "project-list"
     ) as HTMLTemplateElement;
@@ -105,8 +172,29 @@ class ProjectList {
     this.#listSectionEl = importedNode.firstElementChild as HTMLElement;
     this.#listSectionEl.id = `${this.projectType}-projects`;
 
+    projectState.addListener((projects: Project[]): void => {
+      this.#assignedProjects = projects.filter(
+        (project) => project.status === this.#currentProjectStatus
+      );
+      this.#renderProjects();
+    });
+
     this.#attach();
     this.#renderContent();
+  }
+
+  #renderProjects(): void {
+    const listEl = document.getElementById(
+      `${this.projectType}-projects-list`
+    ) as HTMLUListElement;
+
+    listEl.innerHTML = ""; //clear list item to rerender
+
+    for (const projectItem of this.#assignedProjects) {
+      const listItem = document.createElement("li");
+      listItem.textContent = projectItem.title;
+      listEl?.appendChild(listItem);
+    }
   }
 
   #renderContent(): void {
@@ -231,7 +319,7 @@ class ProjectInput {
 
     if (Array.isArray(userInput)) {
       const [title, description, people] = userInput;
-      console.log(title, description, people);
+      projectState.addProject(title, description, people);
       this.#clearInputs();
     }
   }
