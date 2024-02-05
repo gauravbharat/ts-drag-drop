@@ -55,6 +55,10 @@ button:active {
   border-color: #a80041;
 }
 
+h1#app-header {
+  text-align: center;
+}
+
 .projects {
   margin: 1rem;
   border: 1px solid #ff0062;
@@ -92,6 +96,8 @@ button:active {
   padding: 1rem;
   margin: 1rem;
   background: white;
+  display: flex;
+  flex-direction: column;
 }
 
 .projects li h2 {
@@ -125,4 +131,15 @@ button:active {
   padding: 1rem;
   border: 1px solid #ff0062;
   background: #f7f7f7;
+}
+
+.delete-project {
+  float: right;
+  align-self: flex-end;
+}
+
+@media only screen and (max-width: 400px) {
+  h1#app-header {
+    font-size: 1.5rem;
+  }
 }
