@@ -22,6 +22,10 @@ export class ProjectList
 
     this.configure();
     this.renderContent();
+
+    setTimeout(() => {
+      projectState.init();
+    }, 0);
   }
 
   destructor() {

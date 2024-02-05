@@ -32,6 +32,10 @@ class ProjectState extends State<Project> {
     return this.instance;
   }
 
+  init(): void {
+    this.#loadFromStore();
+  }
+
   addProject(title: string, description: string, people: number): void {
     const newProject = new Project(
       `${Math.floor(Math.random() * 100000).toString()}`,
@@ -42,6 +46,7 @@ class ProjectState extends State<Project> {
     );
 
     this.#projects.push(newProject);
+    this.#updateLocalStore();
     this.#updateExecutorFns();
   }
 
@@ -52,6 +57,7 @@ class ProjectState extends State<Project> {
 
     if (project) {
       project.status = newStatus;
+      this.#updateLocalStore();
       this.#updateExecutorFns();
     }
   }
@@ -61,6 +67,16 @@ class ProjectState extends State<Project> {
     // for (const executorFn of this.actionExecutors) {
     //   executorFn(this.#projects.slice());
     // }
+  }
+
+  #loadFromStore(): void {
+    const projects = JSON.parse(localStorage.getItem("ts-projects") || "[]");
+    this.#projects = projects;
+    this.#updateExecutorFns();
+  }
+
+  #updateLocalStore(): void {
+    localStorage.setItem("ts-projects", JSON.stringify(this.#projects));
   }
 }
 
