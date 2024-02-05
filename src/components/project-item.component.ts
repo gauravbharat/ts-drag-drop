@@ -1,6 +1,7 @@
 import { Autobind } from "../decorators/autobind.decorator";
 import { Draggable } from "../models/drag-drop.model";
 import { Project } from "../models/project.model";
+import { projectState } from "../state/project-state";
 import Component from "./base.component";
 
 export class ProjectItem
@@ -8,6 +9,7 @@ export class ProjectItem
   implements Draggable
 {
   #project: Project;
+  #deleteButton: HTMLButtonElement;
 
   get persons(): string {
     if (this.#project.people === 1) {
@@ -21,6 +23,11 @@ export class ProjectItem
     super("single-project", hostId, false, project.id);
     this.#project = project;
 
+    const elementChildren = [...this.element.children];
+    this.#deleteButton = elementChildren.find(
+      (v) => v.localName === "button" && v.className === "delete-project"
+    ) as HTMLButtonElement;
+
     this.configure();
     this.renderContent();
   }
@@ -28,6 +35,7 @@ export class ProjectItem
   destructor() {
     this.element.removeEventListener("dragstart", this.handleDragStart);
     this.element.removeEventListener("dragend", this.handleDragEnd);
+    this.#deleteButton.removeEventListener("click", this.handleDelete);
   }
 
   @Autobind
@@ -41,9 +49,15 @@ export class ProjectItem
     console.log("handleDragEnd", this.#project.title);
   }
 
+  @Autobind
+  handleDelete(): void {
+    projectState.deleteProject(this.#project.id);
+  }
+
   protected configure(): void {
     this.element.addEventListener("dragstart", this.handleDragStart);
     this.element.addEventListener("dragend", this.handleDragEnd);
+    this.#deleteButton.addEventListener("click", this.handleDelete);
   }
 
   protected renderContent(): void {

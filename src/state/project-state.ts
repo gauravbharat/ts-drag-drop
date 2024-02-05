@@ -62,6 +62,18 @@ class ProjectState extends State<Project> {
     }
   }
 
+  deleteProject(projectId: string): void {
+    const foundIndex = this.#projects.findIndex(
+      (project) => project.id === projectId
+    );
+
+    if (foundIndex > -1) {
+      this.#projects.splice(foundIndex, 1);
+      this.#updateLocalStore();
+      this.#updateExecutorFns();
+    }
+  }
+
   #updateExecutorFns() {
     this.updateListeners(this.#projects.slice());
     // for (const executorFn of this.actionExecutors) {
