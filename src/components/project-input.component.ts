@@ -1,7 +1,7 @@
-import { Autobind } from "../decorators/autobind.decorator.js";
-import { projectState } from "../state/project-state.js";
-import * as Validation from "../util/validation.util.js";
-import Component from "./base.component.js";
+import { Autobind } from "../decorators/autobind.decorator";
+import { projectState } from "../state/project-state";
+import * as Validation from "../util/validation.util";
+import Component from "./base.component";
 
 export class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
   /** Goal:
